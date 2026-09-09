@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MyStore — Your Shop. Your Business. Online.</title>
+  <meta
+    name="description"
+    content="MyStore helps businesses create their own online shop and sell products online."
+  />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- ================= HEADER ================= -->
+
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <a href="#/" class="logo">
+        <span class="logo-mark">M</span>
+        <span>MyStore</span>
+      </a>
+
+      <nav class="desktop-nav">
+        <a href="#/">Home</a>
+        <a href="#/discover">Discover</a>
+        <a href="#/stores">Stores</a>
+        <a href="#/sell">Sell on MyStore</a>
+      </nav>
+
+      <div class="header-actions">
+
+        <button
+          class="icon-button search-toggle"
+          aria-label="Search"
+          onclick="toggleSearch()"
+        >
+          <span>⌕</span>
+        </button>
+
+        <a href="#/wishlist" class="icon-button desktop-only" aria-label="Wishlist">
+          ♡
+        </a>
+
+        <a href="#/cart" class="cart-button">
+          <span>Cart</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </a>
+
+        <a href="#/account" class="account-button">
+          <span class="avatar">A</span>
+          <span class="desktop-only">Account</span>
+        </a>
+
+      </div>
+
+    </div>
+
+    <div class="search-bar" id="searchBar">
+      <div class="container">
+        <input
+          type="search"
+          id="globalSearch"
+          placeholder="Search products, stores, categories..."
+          autocomplete="off"
+        />
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ================= APP ================= -->
+
+  <main id="app"></main>
+
+
+  <!-- ================= MOBILE NAV ================= -->
+
+  <nav class="mobile-nav">
+
+    <a href="#/">
+      <span>⌂</span>
+      <small>Home</small>
+    </a>
+
+    <a href="#/discover">
+      <span>⌕</span>
+      <small>Discover</small>
+    </a>
+
+    <a href="#/cart">
+      <span>🛒</span>
+      <small>Cart</small>
+    </a>
+
+    <a href="#/wishlist">
+      <span>♡</span>
+      <small>Saved</small>
+    </a>
+
+    <a href="#/account">
+      <span>◯</span>
+      <small>Account</small>
+    </a>
+
+  </nav>
+
+
+  <!-- ================= TOAST ================= -->
+
+  <div id="toast" class="toast"></div>
+
+
+  <!-- ================= MODAL ================= -->
+
+  <div id="modalOverlay" class="modal-overlay">
+    <div id="modal" class="modal"></div>
+  </div>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
