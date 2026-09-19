@@ -90,6 +90,12 @@ img {
   font-size: 21px;
 }
 
+.logo img {
+  width: 120px;
+  height: auto;
+  display: block;
+}
+
 .logo-mark {
   width: 34px;
   height: 34px;
