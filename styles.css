@@ -84,16 +84,17 @@ img {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 700;
-  font-size: 21px;
+  width: 150px;
+  height: 45px;
+  flex-shrink: 0;
 }
 
 .logo img {
-  width: 120px;
-  height: auto;
   display: block;
+  width: 150px !important;
+  height: 45px !important;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .logo-mark {
