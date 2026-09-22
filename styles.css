@@ -1194,9 +1194,60 @@ th {
     width: min(100% - 28px, 1180px);
   }
 
+  /* ================= MOBILE HEADER ================= */
+
   .header-inner {
     height: 68px;
+    gap: 10px;
   }
+
+  .logo {
+    width: 105px;
+    height: 42px;
+    margin-right: auto;
+  }
+
+  .logo img {
+    width: 105px;
+    max-height: 42px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 0;
+  }
+
+  .icon-button {
+    width: 40px;
+    height: 40px;
+    font-size: 21px;
+  }
+
+  .cart-button {
+    width: 48px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .cart-button > span:first-child {
+    display: none;
+  }
+
+  .account-button {
+    gap: 0;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+
+  /* ================= HERO ================= */
 
   .hero {
     border-radius: 0 0 25px 25px;
@@ -1218,6 +1269,9 @@ th {
     left: 0;
   }
 
+
+  /* ================= SECTIONS ================= */
+
   .section {
     padding: 50px 0;
   }
@@ -1226,17 +1280,29 @@ th {
     font-size: 27px;
   }
 
+
+  /* ================= CATEGORIES ================= */
+
   .category-grid {
-    grid-template-columns: repeat(2,1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
+
+
+  /* ================= PRODUCTS ================= */
 
   .product-grid {
     gap: 12px;
   }
 
+
+  /* ================= STORES ================= */
+
   .store-grid {
     grid-template-columns: 1fr;
   }
+
+
+  /* ================= CTA ================= */
 
   .cta {
     padding: 35px 25px;
@@ -1246,13 +1312,22 @@ th {
     font-size: 34px;
   }
 
+
+  /* ================= FOOTER ================= */
+
   .footer-grid {
     grid-template-columns: 1fr;
   }
 
+
+  /* ================= PRODUCT PAGE ================= */
+
   .product-detail-info h1 {
     font-size: 38px;
   }
+
+
+  /* ================= DASHBOARD ================= */
 
   .stats-grid {
     grid-template-columns: 1fr 1fr;
@@ -1263,4 +1338,5 @@ th {
     gap: 10px;
     flex-direction: column;
   }
+
 }
