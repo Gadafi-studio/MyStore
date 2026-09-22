@@ -68,7 +68,7 @@ img {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(247,247,244,.94);
+  background: rgba(247,247,244,.96);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
 }
@@ -77,9 +77,10 @@ img {
   height: 76px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 25px;
+  gap: 20px;
 }
+
+/* LOGO */
 
 .logo {
   display: flex;
@@ -98,11 +99,13 @@ img {
   object-position: left center;
 }
 
+/* DESKTOP NAV */
+
 .desktop-nav {
   display: flex;
+  align-items: center;
   gap: 30px;
   margin-left: auto;
-  margin-right: 20px;
 }
 
 .desktop-nav a {
@@ -115,17 +118,23 @@ img {
   color: var(--black);
 }
 
+/* HEADER ACTIONS */
+
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
+  margin-left: 5px;
 }
 
 .icon-button {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: transparent;
+  background: white;
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
   font-size: 22px;
 }
 
@@ -140,6 +149,7 @@ img {
   padding: 9px 14px;
   border: 1px solid var(--border);
   border-radius: 30px;
+  background: white;
   font-size: 13px;
   font-weight: 700;
 }
@@ -165,8 +175,8 @@ img {
 }
 
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   display: grid;
   place-items: center;
