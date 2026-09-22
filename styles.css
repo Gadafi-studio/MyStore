@@ -91,21 +91,11 @@ img {
 
 .logo img {
   display: block;
-  width: 150px !important;
-  height: 45px !important;
+  width: 150px;
+  height: auto;
+  max-height: 45px;
   object-fit: contain;
   object-position: left center;
-}
-
-.logo-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: var(--black);
-  color: var(--green);
-  display: grid;
-  place-items: center;
-  font-weight: 700;
 }
 
 .desktop-nav {
