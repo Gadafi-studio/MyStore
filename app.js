@@ -2065,3 +2065,386 @@ function renderSellerRegistration() {
 /* ---------------------------------------------------------
    END OF CHUNK 6
    --------------------------------------------------------- */
+
+
+/* =========================================================
+   CHUNK 7/8 — ROUTER, HELP & UTILITY PAGES
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   HELP PAGE
+   --------------------------------------------------------- */
+
+function renderHelp() {
+  layout(`
+    <section class="section">
+
+      <span class="eyebrow">MYStore SUPPORT</span>
+
+      ${sectionHeading(
+        'How can we help?',
+        'Helpful information for shoppers and sellers.'
+      )}
+
+      <div class="help-grid">
+
+        <article class="help-card">
+          <h3>Shopping</h3>
+          <p>Browse stores, compare products and add items to your bag.</p>
+          <a class="text-link" href="#/">Start shopping →</a>
+        </article>
+
+        <article class="help-card">
+          <h3>Delivery</h3>
+          <p>Delivery options and charges must be confirmed for each order.</p>
+          <a class="text-link" href="#/delivery">Delivery information →</a>
+        </article>
+
+        <article class="help-card">
+          <h3>Payments</h3>
+          <p>Payment processing must be connected before live transactions.</p>
+          <a class="text-link" href="#/checkout">Checkout information →</a>
+        </article>
+
+        <article class="help-card">
+          <h3>Selling</h3>
+          <p>Learn about preparing your business to sell on MyStore.</p>
+          <a class="text-link" href="#/seller">Seller centre →</a>
+        </article>
+
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   DELIVERY INFORMATION
+   --------------------------------------------------------- */
+
+function renderDeliveryInfo() {
+  layout(`
+    <section class="section">
+
+      ${sectionHeading(
+        'Delivery information',
+        'A clear delivery experience is part of the MyStore mission.'
+      )}
+
+      <div class="info-panel">
+
+        <h2>How delivery works</h2>
+
+        <p>
+          Delivery availability, pricing and estimated arrival times
+          depend on the seller, the destination and the delivery service.
+        </p>
+
+        <h3>Before placing an order</h3>
+
+        <ul>
+          <li>Confirm that the seller serves your area.</li>
+          <li>Check the delivery charge before payment.</li>
+          <li>Provide a reachable phone number and clear directions.</li>
+          <li>Keep your order confirmation for reference.</li>
+        </ul>
+
+        <div class="checkout-notice">
+          <strong>Current development status</strong>
+          <p>
+            MyStore's live delivery calculation, dispatch, tracking and
+            delivery-partner integrations are not implemented here.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   RETURNS INFORMATION
+   --------------------------------------------------------- */
+
+function renderReturnsInfo() {
+  layout(`
+    <section class="section">
+
+      ${sectionHeading(
+        'Returns and refunds',
+        'Understand the policy before completing a purchase.'
+      )}
+
+      <div class="info-panel">
+
+        <p>
+          Return eligibility, time limits and refund arrangements must
+          be defined clearly by MyStore and participating sellers.
+        </p>
+
+        <p>
+          This development version does not process returns or refunds.
+          Contact the seller through an established support channel
+          before assuming a product can be returned.
+        </p>
+
+        <a class="button secondary" href="#/help">
+          Visit help centre
+        </a>
+
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   NOT FOUND PAGE
+   --------------------------------------------------------- */
+
+function renderNotFound() {
+  layout(`
+    <section class="section">
+      ${emptyState(
+        'Page not found',
+        'The page may have moved or the address may be incorrect.',
+        'Return home',
+        '/'
+      )}
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   ROUTE PARSER
+   --------------------------------------------------------- */
+
+function getCurrentRoute() {
+  const hash = window.location.hash || '#/';
+  const rawPath = hash.startsWith('#')
+    ? hash.slice(1)
+    : hash;
+
+  const path = rawPath || '/';
+
+  return path.split('?')[0];
+}
+
+
+/* ---------------------------------------------------------
+   MAIN ROUTER
+   --------------------------------------------------------- */
+
+function route() {
+  const path = getCurrentRoute();
+
+  // Wait for initial marketplace data to load before rendering
+  // database-dependent screens.
+  if (!marketplaceLoaded) {
+    renderMarketplaceStatus(
+      'Loading MyStore…',
+      'Getting active stores and products.'
+    );
+    return;
+  }
+
+  if (marketplaceLoadError) {
+    renderMarketplaceStatus(
+      'Marketplace unavailable',
+      'We could not load the latest marketplace data.',
+      true
+    );
+    return;
+  }
+
+  if (path === '/' || path === '') {
+    renderHome();
+    return;
+  }
+
+  if (path === '/stores') {
+    renderStores();
+    return;
+  }
+
+  if (path === '/search') {
+    renderSearchResults();
+    return;
+  }
+
+  if (path === '/cart') {
+    renderCart();
+    return;
+  }
+
+  if (path === '/wishlist') {
+    renderWishlist();
+    return;
+  }
+
+  if (path === '/checkout') {
+    renderCheckout();
+    return;
+  }
+
+  if (path === '/profile') {
+    renderProfile();
+    return;
+  }
+
+  if (path === '/seller') {
+    renderSellerCentre();
+    return;
+  }
+
+  if (path === '/seller/register') {
+    renderSellerRegistration();
+    return;
+  }
+
+  if (path === '/help') {
+    renderHelp();
+    return;
+  }
+
+  if (path === '/delivery') {
+    renderDeliveryInfo();
+    return;
+  }
+
+  if (path === '/returns') {
+    renderReturnsInfo();
+    return;
+  }
+
+  if (path.startsWith('/product/')) {
+    const productId = path.slice('/product/'.length);
+    renderProductDetails(productId);
+    return;
+  }
+
+  if (path.startsWith('/store/')) {
+    const storeSlug = path.slice('/store/'.length);
+    renderStorePage(storeSlug);
+    return;
+  }
+
+  if (path.startsWith('/category/')) {
+    const category = path.slice('/category/'.length);
+    renderCategory(category);
+    return;
+  }
+
+  renderNotFound();
+}
+
+
+/* ---------------------------------------------------------
+   ROUTER INITIALIZATION
+   --------------------------------------------------------- */
+
+function initializeRouter() {
+  window.addEventListener('hashchange', route);
+
+  // A hash may have changed before the app finished loading.
+  route();
+}
+
+
+/* ---------------------------------------------------------
+   END OF CHUNK 7
+   --------------------------------------------------------- */
+
+
+/* =========================================================
+   CHUNK 8/8 — APPLICATION INITIALIZATION
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   GLOBAL ERROR HANDLING
+   --------------------------------------------------------- */
+
+window.addEventListener('error', function (event) {
+  console.error(
+    'MyStore application error:',
+    event.error || event.message
+  );
+});
+
+window.addEventListener('unhandledrejection', function (event) {
+  console.error(
+    'MyStore asynchronous error:',
+    event.reason
+  );
+});
+
+
+/* ---------------------------------------------------------
+   INITIALIZE APPLICATION
+   --------------------------------------------------------- */
+
+async function initializeMyStore() {
+  const root = appRoot();
+
+  if (!root) {
+    console.error(
+      'MyStore could not start: #app was not found in index.html.'
+    );
+    return;
+  }
+
+  renderMarketplaceStatus(
+    'Loading MyStore…',
+    'Connecting to the marketplace.'
+  );
+
+  try {
+    await loadMarketplaceData();
+
+    console.info('MyStore marketplace data loaded.', {
+      stores: STORES.length,
+      products: PRODUCTS.length
+    });
+
+    initializeRouter();
+  } catch (error) {
+    console.error(
+      'MyStore startup failed:',
+      error
+    );
+
+    marketplaceLoaded = true;
+    marketplaceLoadError = error;
+
+    renderMarketplaceStatus(
+      'We could not load MyStore',
+      'Check your internet connection, Supabase configuration, database permissions and table names.',
+      true
+    );
+  }
+}
+
+
+/* ---------------------------------------------------------
+   START APP WHEN HTML IS READY
+   --------------------------------------------------------- */
+
+if (document.readyState === 'loading') {
+  document.addEventListener(
+    'DOMContentLoaded',
+    initializeMyStore,
+    { once: true }
+  );
+} else {
+  initializeMyStore();
+}
+
+
+/* =========================================================
+   END OF CHUNK 8
+   ========================================================= */
