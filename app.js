@@ -1320,3 +1320,748 @@ function renderStorePage(storeSlug) {
 /* ---------------------------------------------------------
    END OF CHUNK 4
    --------------------------------------------------------- */
+
+/* =========================================================
+   CHUNK 5/8 — CART, WISHLIST & SHOPPING INTERACTIONS
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   ADD PRODUCT TO CART
+   --------------------------------------------------------- */
+
+function addToCart(productId) {
+  const product = getProduct(productId);
+
+  if (!product) {
+    toast('Product could not be found.');
+    return;
+  }
+
+  const availableStock = Number(product.stock || 0);
+
+  if (availableStock <= 0) {
+    toast('Sorry, this product is out of stock.');
+    return;
+  }
+
+  const existingItem = cart.find(
+    item => item.productId === productId
+  );
+
+  if (existingItem) {
+    if (existingItem.quantity >= availableStock) {
+      toast('You have reached the available stock limit.');
+      return;
+    }
+
+    existingItem.quantity += 1;
+  } else {
+    cart.push({
+      productId,
+      quantity: 1
+    });
+  }
+
+  saveStorage('mystore_cart', cart);
+
+  toast('Added to your shopping bag.');
+
+  // Refresh the current screen so cart counts stay accurate.
+  route();
+}
+
+
+/* ---------------------------------------------------------
+   REMOVE ITEM FROM CART
+   --------------------------------------------------------- */
+
+function removeFromCart(productId) {
+  cart = cart.filter(
+    item => item.productId !== productId
+  );
+
+  saveStorage('mystore_cart', cart);
+
+  toast('Item removed from your bag.');
+
+  renderCart();
+}
+
+
+/* ---------------------------------------------------------
+   UPDATE CART QUANTITY
+   --------------------------------------------------------- */
+
+function updateCartQuantity(productId, change) {
+  const item = cart.find(
+    cartItem => cartItem.productId === productId
+  );
+
+  const product = getProduct(productId);
+
+  if (!item || !product) {
+    return;
+  }
+
+  const nextQuantity = item.quantity + Number(change);
+
+  if (nextQuantity <= 0) {
+    removeFromCart(productId);
+    return;
+  }
+
+  if (nextQuantity > Number(product.stock || 0)) {
+    toast('You have reached the available stock limit.');
+    return;
+  }
+
+  item.quantity = nextQuantity;
+
+  saveStorage('mystore_cart', cart);
+
+  renderCart();
+}
+
+
+/* ---------------------------------------------------------
+   RENDER CART PAGE
+   --------------------------------------------------------- */
+
+function renderCart() {
+  // Remove cart lines for products that are no longer
+  // present in the current product data.
+  cart = cart.filter(item => getProduct(item.productId));
+
+  saveStorage('mystore_cart', cart);
+
+  if (cart.length === 0) {
+    layout(`
+      <section class="section">
+        ${emptyState(
+          'Your bag is empty',
+          'Find something you love and add it to your bag.',
+          'Explore products',
+          '/'
+        )}
+      </section>
+    `);
+    return;
+  }
+
+  const subtotal = cartSubtotal();
+
+  layout(`
+    <section class="section">
+
+      <div class="breadcrumbs">
+        <a href="#/">Home</a>
+        <span>/</span>
+        <span>Shopping bag</span>
+      </div>
+
+      ${sectionHeading(
+        'Your shopping bag',
+        `${cartCount()} item${cartCount() === 1 ? '' : 's'} in your bag.`
+      )}
+
+      <div class="cart-layout">
+
+        <div class="cart-items">
+
+          ${cart.map(item => {
+            const product = getProduct(item.productId);
+
+            if (!product) {
+              return '';
+            }
+
+            return `
+              <article class="cart-item">
+
+                <a
+                  class="cart-item-image"
+                  href="#/product/${encodeURIComponent(product.id)}"
+                >
+                  ${productImage(product)}
+                </a>
+
+                <div class="cart-item-info">
+
+                  <p class="product-store-name">
+                    ${esc(product.store)}
+                  </p>
+
+                  <h3>
+                    <a href="#/product/${encodeURIComponent(product.id)}">
+                      ${esc(product.name)}
+                    </a>
+                  </h3>
+
+                  <p class="cart-item-price">
+                    ${money(product.price)}
+                  </p>
+
+                  <div class="quantity-control">
+
+                    <button
+                      type="button"
+                      onclick="updateCartQuantity('${esc(product.id)}', -1)"
+                      aria-label="Decrease quantity"
+                    >−</button>
+
+                    <span>${item.quantity}</span>
+
+                    <button
+                      type="button"
+                      onclick="updateCartQuantity('${esc(product.id)}', 1)"
+                      aria-label="Increase quantity"
+                    >+</button>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    class="text-button danger"
+                    onclick="removeFromCart('${esc(product.id)}')"
+                  >Remove</button>
+
+                </div>
+
+                <strong class="cart-item-total">
+                  ${money(product.price * item.quantity)}
+                </strong>
+
+              </article>
+            `;
+          }).join('')}
+
+        </div>
+
+        <aside class="cart-summary">
+
+          <h2>Order summary</h2>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong>${money(subtotal)}</strong>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span>Calculated later</span>
+          </div>
+
+          <div class="summary-row summary-total">
+            <span>Estimated total</span>
+            <strong>${money(subtotal)}</strong>
+          </div>
+
+          <p class="summary-note">
+            Delivery charges and payment options have not yet been
+            confirmed.
+          </p>
+
+          <button
+            type="button"
+            class="button primary full-width"
+            onclick="beginCheckout()"
+          >
+            Continue to checkout
+          </button>
+
+          <a href="#/" class="continue-shopping">
+            Continue shopping
+          </a>
+
+        </aside>
+
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   BEGIN CHECKOUT
+   --------------------------------------------------------- */
+
+function beginCheckout() {
+  if (!cart.length) {
+    toast('Your bag is empty.');
+    return;
+  }
+
+  navigate('/checkout');
+}
+
+
+/* ---------------------------------------------------------
+   TOGGLE WISHLIST
+   --------------------------------------------------------- */
+
+function toggleWishlist(productId) {
+  const product = getProduct(productId);
+
+  if (!product) {
+    toast('Product could not be found.');
+    return;
+  }
+
+  if (wishlist.includes(productId)) {
+    wishlist = wishlist.filter(id => id !== productId);
+    toast('Removed from your wishlist.');
+  } else {
+    wishlist.push(productId);
+    toast('Added to your wishlist.');
+  }
+
+  saveStorage('mystore_wishlist', wishlist);
+
+  // Re-render so the heart icon and header count update.
+  route();
+}
+
+
+/* ---------------------------------------------------------
+   WISHLIST PAGE
+   --------------------------------------------------------- */
+
+function renderWishlist() {
+  const products = wishlist
+    .map(id => getProduct(id))
+    .filter(Boolean);
+
+  layout(`
+    <section class="section">
+
+      <div class="breadcrumbs">
+        <a href="#/">Home</a>
+        <span>/</span>
+        <span>Wishlist</span>
+      </div>
+
+      ${sectionHeading(
+        'Your wishlist',
+        'Products you have saved for later.'
+      )}
+
+      ${productGrid(products)}
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   CLEAR CART
+   --------------------------------------------------------- */
+
+function clearCart() {
+  cart = [];
+
+  saveStorage('mystore_cart', cart);
+
+  toast('Your shopping bag has been cleared.');
+
+  renderCart();
+}
+
+
+/* ---------------------------------------------------------
+   END OF CHUNK 5
+   --------------------------------------------------------- */
+
+/* =========================================================
+   CHUNK 6/8 — CHECKOUT, PROFILE & SELLER CENTRE
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   CHECKOUT PAGE
+   --------------------------------------------------------- */
+
+function renderCheckout() {
+  if (!cart.length) {
+    layout(emptyState(
+      'Your bag is empty',
+      'Add products before continuing to checkout.',
+      'Explore products',
+      '/'
+    ));
+    return;
+  }
+
+  const subtotal = cartSubtotal();
+
+  layout(`
+    <section class="section">
+
+      <div class="breadcrumbs">
+        <a href="#/">Home</a>
+        <a href="#/cart">Shopping bag</a>
+        <span>Checkout</span>
+      </div>
+
+      ${sectionHeading(
+        'Checkout',
+        'Review your order and prepare your delivery details.'
+      )}
+
+      <div class="checkout-layout">
+
+        <form
+          class="checkout-form"
+          id="checkout-form"
+          onsubmit="submitCheckout(event)"
+        >
+
+          <h2>Delivery details</h2>
+
+          <label for="checkout-name">Full name</label>
+          <input
+            id="checkout-name"
+            name="fullName"
+            type="text"
+            autocomplete="name"
+            required
+          />
+
+          <label for="checkout-phone">Phone number</label>
+          <input
+            id="checkout-phone"
+            name="phone"
+            type="tel"
+            autocomplete="tel"
+            placeholder="e.g. 07XX XXX XXX"
+            required
+          />
+
+          <label for="checkout-county">County</label>
+          <input
+            id="checkout-county"
+            name="county"
+            type="text"
+            value="Isiolo"
+            required
+          />
+
+          <label for="checkout-town">Town / area</label>
+          <input
+            id="checkout-town"
+            name="town"
+            type="text"
+            placeholder="e.g. Isiolo town"
+            required
+          />
+
+          <label for="checkout-address">Delivery instructions</label>
+          <textarea
+            id="checkout-address"
+            name="address"
+            rows="3"
+            placeholder="Building, landmark or other useful directions"
+            required
+          ></textarea>
+
+          <div class="checkout-notice">
+            <strong>Payments aren't connected yet.</strong>
+            <p>
+              This screen collects delivery details for interface testing.
+              It will not submit an order or charge a payment.
+            </p>
+          </div>
+
+          <button class="button primary full-width" type="submit">
+            Review order details
+          </button>
+
+        </form>
+
+        <aside class="cart-summary">
+
+          <h2>Your order</h2>
+
+          ${cart.map(item => {
+            const product = getProduct(item.productId);
+
+            if (!product) return '';
+
+            return `
+              <div class="summary-row">
+                <span>
+                  ${esc(product.name)} × ${item.quantity}
+                </span>
+                <strong>
+                  ${money(product.price * item.quantity)}
+                </strong>
+              </div>
+            `;
+          }).join('')}
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong>${money(subtotal)}</strong>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span>Not calculated</span>
+          </div>
+
+          <div class="summary-row summary-total">
+            <span>Estimated total</span>
+            <strong>${money(subtotal)}</strong>
+          </div>
+
+        </aside>
+
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   CHECKOUT FORM — TEST MODE ONLY
+   --------------------------------------------------------- */
+
+function submitCheckout(event) {
+  event.preventDefault();
+
+  const form = document.getElementById('checkout-form');
+
+  if (!form || !form.reportValidity()) {
+    return;
+  }
+
+  const formData = new FormData(form);
+
+  const details = {
+    fullName: String(formData.get('fullName') || '').trim(),
+    phone: String(formData.get('phone') || '').trim(),
+    county: String(formData.get('county') || '').trim(),
+    town: String(formData.get('town') || '').trim(),
+    address: String(formData.get('address') || '').trim()
+  };
+
+  // Keep this as a local preview only.
+  // Do not treat this as an actual placed order.
+  const preview = {
+    delivery: details,
+    items: cart.map(item => {
+      const product = getProduct(item.productId);
+
+      return {
+        productId: item.productId,
+        name: product?.name || '',
+        quantity: item.quantity,
+        unitPrice: product?.price || 0
+      };
+    }),
+    subtotal: cartSubtotal(),
+    status: 'preview_only'
+  };
+
+  console.log('MyStore checkout preview:', preview);
+
+  layout(`
+    <section class="section">
+      <div class="checkout-success">
+
+        <span class="eyebrow">TEST CHECKOUT</span>
+
+        <h1>Details captured for preview.</h1>
+
+        <p>
+          This is a test preview only. No order has been created,
+          no stock has been reserved, and no payment has been made.
+        </p>
+
+        <div class="checkout-preview-summary">
+          <h2>Delivery summary</h2>
+          <p><strong>Name:</strong> ${esc(details.fullName)}</p>
+          <p><strong>Phone:</strong> ${esc(details.phone)}</p>
+          <p><strong>Location:</strong>
+            ${esc(details.town)}, ${esc(details.county)}
+          </p>
+          <p><strong>Address:</strong> ${esc(details.address)}</p>
+          <p><strong>Subtotal:</strong> ${money(preview.subtotal)}</p>
+        </div>
+
+        <button
+          class="button primary"
+          type="button"
+          onclick="navigate('/cart')"
+        >
+          Return to bag
+        </button>
+
+      </div>
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   CUSTOMER PROFILE
+   --------------------------------------------------------- */
+
+function renderProfile() {
+  layout(`
+    <section class="section">
+
+      <span class="eyebrow">YOUR ACCOUNT</span>
+
+      ${sectionHeading(
+        'Your profile',
+        'Manage your MyStore shopping experience.'
+      )}
+
+      <div class="profile-panel">
+
+        <div class="profile-avatar">M</div>
+
+        <div>
+          <h2>Welcome to MyStore</h2>
+          <p>
+            Account registration and sign-in need to be connected
+            before this becomes a personal customer profile.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="profile-shortcuts">
+
+        <a class="profile-shortcut" href="#/cart">
+          <span>Shopping bag</span>
+          <strong>${cartCount()} items →</strong>
+        </a>
+
+        <a class="profile-shortcut" href="#/wishlist">
+          <span>Wishlist</span>
+          <strong>${wishlist.length} saved →</strong>
+        </a>
+
+        <a class="profile-shortcut" href="#/stores">
+          <span>Discover</span>
+          <strong>Explore stores →</strong>
+        </a>
+
+      </div>
+
+      <div class="checkout-notice">
+        <strong>Authentication not connected</strong>
+        <p>
+          Sign-in, account security, order history and saved customer
+          details must be integrated with Supabase Auth before use.
+        </p>
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   SELLER CENTRE
+   --------------------------------------------------------- */
+
+function renderSellerCentre() {
+  layout(`
+    <section class="section">
+
+      <span class="eyebrow">FOR BUSINESS OWNERS</span>
+
+      ${sectionHeading(
+        'Seller centre',
+        'Your starting point for selling on MyStore.'
+      )}
+
+      <div class="seller-welcome">
+
+        <div>
+          <h1>Bring your shop online.</h1>
+
+          <p>
+            Showcase your products and help customers discover your
+            business. Start by understanding the seller setup.
+          </p>
+
+          <a class="button primary" href="#/seller/register">
+            Start seller setup
+          </a>
+        </div>
+
+      </div>
+
+      <div class="seller-feature-grid">
+
+        <article class="seller-feature">
+          <span class="seller-feature-number">01</span>
+          <h3>Create your store</h3>
+          <p>Set your store name, location and description.</p>
+        </article>
+
+        <article class="seller-feature">
+          <span class="seller-feature-number">02</span>
+          <h3>List your products</h3>
+          <p>Add product names, prices, images and stock.</p>
+        </article>
+
+        <article class="seller-feature">
+          <span class="seller-feature-number">03</span>
+          <h3>Prepare to sell</h3>
+          <p>Configure delivery, payments and order handling.</p>
+        </article>
+
+      </div>
+
+      <div class="checkout-notice">
+        <strong>Seller tools are not connected yet.</strong>
+        <p>
+          Store creation, product management, subscriptions and order
+          management require authenticated database operations.
+        </p>
+      </div>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   SELLER REGISTRATION PLACEHOLDER
+   --------------------------------------------------------- */
+
+function renderSellerRegistration() {
+  layout(`
+    <section class="section">
+
+      ${sectionHeading(
+        'Set up your store',
+        'Seller registration is currently a preview.'
+      )}
+
+      <div class="checkout-notice">
+        <strong>Database setup required</strong>
+        <p>
+          Before enabling store creation, we need to connect this form
+          to authenticated Supabase operations and enforce store ownership
+          through Row Level Security.
+        </p>
+      </div>
+
+      <a class="button secondary" href="#/seller">
+        Back to seller centre
+      </a>
+
+    </section>
+  `);
+}
+
+
+/* ---------------------------------------------------------
+   END OF CHUNK 6
+   --------------------------------------------------------- */
